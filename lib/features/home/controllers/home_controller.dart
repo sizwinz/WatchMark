@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:watchmark/core/database/app_database.dart';
+import 'package:watchmark/core/database/daos/library_dao.dart';
+import 'package:watchmark/core/database/daos/sessions_dao.dart';
+import 'package:watchmark/core/network/tmdb_api_service.dart';
 import 'package:watchmark/shared/providers/database_provider.dart';
 
 class ContinueWatchingItem {
@@ -127,3 +130,21 @@ final homeStatsProvider = StreamProvider.autoDispose<HomeStats>((ref) {
     );
   });
 });
+
+final homeTrendingProvider = FutureProvider.autoDispose<List<TmdbSearchResult>>((ref) async {
+  final tmdb = ref.watch(tmdbApiServiceProvider);
+  return tmdb.getTrending();
+});
+
+final homeRecentActivityProvider = StreamProvider.autoDispose<List<WatchSessionWithMedia>>((ref) {
+  final sessionsDao = ref.watch(sessionsDaoProvider);
+  return sessionsDao.watchAllSessionsWithMedia().map((sessions) => sessions.take(4).toList());
+});
+
+final homeWatchlistProvider = StreamProvider.autoDispose<List<LibraryItemWithMedia>>((ref) {
+  final libraryDao = ref.watch(libraryDaoProvider);
+  return libraryDao.watchLibraryWithMedia().map((items) {
+    return items.where((i) => i.entry.status == 'watchlist').take(6).toList();
+  });
+});
+

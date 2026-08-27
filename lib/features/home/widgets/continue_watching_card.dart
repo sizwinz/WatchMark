@@ -45,21 +45,22 @@ class ContinueWatchingCard extends ConsumerWidget {
     final totalStr = _formatDuration(item.totalRuntimeSeconds);
 
     return Container(
-      width: 260,
+      width: 270,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-        border: Border.all(color: AppTheme.border(context)),
+        border: Border.all(color: AppTheme.border(context), width: 1),
       ),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thumbnail with Progress Bar Overlay
             SizedBox(
-              height: 125,
+              height: 130,
               width: double.infinity,
               child: Stack(
                 fit: StackFit.expand,
@@ -69,19 +70,25 @@ class ContinueWatchingCard extends ConsumerWidget {
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
-                        child: const Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
+                        child: const Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     )
                   else
                     Container(
-                      color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                      color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                       child: const Center(
-                        child: Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        child: Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     ),
                   // Gradient Overlay
@@ -93,9 +100,9 @@ class ContinueWatchingCard extends ConsumerWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.75),
+                            Colors.black.withValues(alpha: 0.8),
                           ],
-                          stops: const [0.6, 1.0],
+                          stops: const [0.4, 1.0],
                         ),
                       ),
                     ),
@@ -105,16 +112,18 @@ class ContinueWatchingCard extends ConsumerWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
                       ),
                       child: Text(
                         isMovie ? 'MOVIE' : 'TV',
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
                           color: AppTheme.primary,
                         ),
                       ),

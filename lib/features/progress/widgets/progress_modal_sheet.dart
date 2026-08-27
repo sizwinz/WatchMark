@@ -242,6 +242,29 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
     }
   }
 
+  Widget _buildQuickPreset(BuildContext context, String label, int minutes) {
+    return InkWell(
+      onTap: () => _addMinutes(minutes),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceElevated(context),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppTheme.border(context)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary(context),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalSecs = widget.totalDurationSeconds > 0 ? widget.totalDurationSeconds : 3600;
@@ -252,7 +275,7 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          top: 20,
+          top: 12,
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         child: SingleChildScrollView(
@@ -260,6 +283,18 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Modal Drag Handle
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textMuted(context).withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -283,12 +318,12 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, size: 20),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
-              const Divider(height: 24),
+              const Divider(height: 20),
 
               // Time and Percentage Labels (Tappable timestamp to edit directly)
               Row(
@@ -297,80 +332,104 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
                   InkWell(
                     onTap: _openTimeInputDialog,
                     borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+                      ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             _formatDuration(_currentSeconds),
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.primary,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.edit, size: 14, color: AppTheme.textMuted(context)),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.edit, size: 14, color: AppTheme.primary),
                         ],
                       ),
                     ),
                   ),
-                  Text(
-                    '$percentage%',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textMuted(context)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.containerBg(context),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.border(context)),
+                    ),
+                    child: Text(
+                      '$percentage%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary(context),
+                      ),
+                    ),
                   ),
                   Text(
                     _formatDuration(totalSecs),
-                    style: TextStyle(fontSize: 16, color: AppTheme.textMuted(context)),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textMuted(context),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               // Scrubber Slider
-              Slider(
-                value: _currentSeconds.toDouble().clamp(0.0, totalSecs.toDouble()),
-                min: 0.0,
-                max: totalSecs.toDouble(),
-                activeColor: AppTheme.primary,
-                onChanged: (val) {
-                  setState(() {
-                    _currentSeconds = val.toInt();
-                  });
-                },
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 4,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                  activeTrackColor: AppTheme.primary,
+                  inactiveTrackColor: AppTheme.isDark(context)
+                      ? const Color(0xFF262C38)
+                      : const Color(0xFFE2E5EC),
+                  thumbColor: AppTheme.primary,
+                ),
+                child: Slider(
+                  value: _currentSeconds.toDouble().clamp(0.0, totalSecs.toDouble()),
+                  min: 0.0,
+                  max: totalSecs.toDouble(),
+                  onChanged: (val) {
+                    setState(() {
+                      _currentSeconds = val.toInt();
+                    });
+                  },
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // Quick Increment Chips
+              // Quick Increment Presets
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ActionChip(
-                    label: const Text('+5 min'),
-                    onPressed: () => _addMinutes(5),
-                  ),
-                  const SizedBox(width: 8),
-                  ActionChip(
-                    label: const Text('+15 min'),
-                    onPressed: () => _addMinutes(15),
-                  ),
-                  const SizedBox(width: 8),
-                  ActionChip(
-                    label: const Text('+30 min'),
-                    onPressed: () => _addMinutes(30),
-                  ),
+                  _buildQuickPreset(context, '+5 min', 5),
+                  const SizedBox(width: 10),
+                  _buildQuickPreset(context, '+15 min', 15),
+                  const SizedBox(width: 10),
+                  _buildQuickPreset(context, '+30 min', 30),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
               // Streaming Platform Tagging
               const Text(
                 'Streaming Platform',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
-                height: 36,
+                height: 38,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _platforms.length,
@@ -378,16 +437,49 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
                   itemBuilder: (context, index) {
                     final p = _platforms[index];
                     final isSelected = _selectedPlatform == p;
-                    return ChoiceChip(
-                      label: Text(_platformDisplayName(p)),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() {
-                            _selectedPlatform = p;
-                          });
-                        }
+                    final pColor = AppTheme.getPlatformColor(p);
+
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          _selectedPlatform = p;
+                        });
                       },
+                      borderRadius: BorderRadius.circular(19),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? pColor.withValues(alpha: 0.25)
+                              : AppTheme.containerBg(context),
+                          borderRadius: BorderRadius.circular(19),
+                          border: Border.all(
+                            color: isSelected ? pColor : AppTheme.border(context),
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 4,
+                              backgroundColor: isSelected ? pColor : pColor.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              _platformDisplayName(p),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected
+                                    ? (AppTheme.isDark(context) ? Colors.white : Colors.black87)
+                                    : AppTheme.textMuted(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -400,10 +492,13 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _markComplete,
-                      icon: const Icon(Icons.check_circle_outline, color: AppTheme.success),
+                      icon: const Icon(Icons.check_circle_outline, color: AppTheme.success, size: 18),
                       label: const Text('Mark Complete'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                        ),
                       ),
                     ),
                   ),
@@ -415,6 +510,9 @@ class _ProgressModalSheetState extends ConsumerState<ProgressModalSheet> {
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                        ),
                       ),
                       child: const Text('Save Progress'),
                     ),

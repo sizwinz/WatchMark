@@ -52,6 +52,7 @@ android/.gradle
 android/captures/
 android/gradle/wrapper/gradle-wrapper.jar
 android/app/build/
+android/build/
 
 # Agent & planning directories
 AGENTS.md

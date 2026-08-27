@@ -217,38 +217,63 @@ class TitleDetailsView extends ConsumerWidget {
                           ),
                           const SizedBox(height: 12),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              ActionChip(
-                                avatar: const Icon(Icons.add, size: 16, color: AppTheme.primary),
-                                label: const Text('+15 min', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                                onPressed: () {
-                                  ref.read(progressServiceProvider).incrementProgress(
-                                    mediaId: state.localTitle!.id,
-                                    deltaSeconds: 15 * 60,
-                                    seasonNumber: state.libraryEntry?.currentSeason,
-                                    episodeNumber: state.libraryEntry?.currentEpisode,
-                                  );
-                                },
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    ref.read(progressServiceProvider).incrementProgress(
+                                      mediaId: state.localTitle!.id,
+                                      deltaSeconds: 15 * 60,
+                                      seasonNumber: state.libraryEntry?.currentSeason,
+                                      episodeNumber: state.libraryEntry?.currentEpisode,
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add, size: 16, color: AppTheme.primary),
+                                  label: const Text(
+                                    '+15 min',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 11),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                                    ),
+                                    side: BorderSide(
+                                      color: AppTheme.isDark(context)
+                                          ? const Color(0xFF353C4D)
+                                          : const Color(0xFFD0D5DD),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  ProgressModalSheet.show(
-                                    context,
-                                    mediaId: state.localTitle!.id,
-                                    title: detail.title,
-                                    totalDurationSeconds: totalSeconds,
-                                    initialProgressSeconds: state.libraryEntry?.progressSeconds ?? 0,
-                                    seasonNumber: state.libraryEntry?.currentSeason,
-                                    episodeNumber: state.libraryEntry?.currentEpisode,
-                                    isMovie: detail.mediaType == 'movie',
-                                  );
-                                },
-                                icon: const Icon(Icons.tune, size: 16),
-                                label: const Text('Update Progress', style: TextStyle(fontSize: 12)),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    ProgressModalSheet.show(
+                                      context,
+                                      mediaId: state.localTitle!.id,
+                                      title: detail.title,
+                                      totalDurationSeconds: totalSeconds,
+                                      initialProgressSeconds: state.libraryEntry?.progressSeconds ?? 0,
+                                      seasonNumber: state.libraryEntry?.currentSeason,
+                                      episodeNumber: state.libraryEntry?.currentEpisode,
+                                      isMovie: detail.mediaType == 'movie',
+                                    );
+                                  },
+                                  icon: const Icon(Icons.tune, size: 16),
+                                  label: const Text(
+                                    'Update Progress',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 11),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

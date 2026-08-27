@@ -68,6 +68,9 @@ void main() {
           overrides: [
             continueWatchingStreamProvider.overrideWith((ref) => Stream.value([])),
             homeStatsProvider.overrideWith((ref) => Stream.value(const HomeStats())),
+            homeTrendingProvider.overrideWith((ref) => Future.value([])),
+            homeRecentActivityProvider.overrideWith((ref) => Stream.value([])),
+            homeWatchlistProvider.overrideWith((ref) => Stream.value([])),
           ],
           child: const MaterialApp(
             home: HomeView(),
@@ -117,6 +120,9 @@ void main() {
               completedCount: 5,
               totalMinutesWatched: 120,
             ))),
+            homeTrendingProvider.overrideWith((ref) => Future.value([])),
+            homeRecentActivityProvider.overrideWith((ref) => Stream.value([])),
+            homeWatchlistProvider.overrideWith((ref) => Stream.value([])),
           ],
           child: const MaterialApp(
             home: HomeView(),

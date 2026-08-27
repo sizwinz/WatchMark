@@ -45,6 +45,42 @@ class AppTheme {
   static Color containerBg(BuildContext context) =>
       isDark(context) ? const Color(0xFF14171F) : const Color(0xFFEEF0F5);
 
+  static Color getPlatformColor(String? platform) {
+    if (platform == null) return const Color(0xFF64748B);
+    switch (platform.toLowerCase().trim()) {
+      case 'netflix':
+        return const Color(0xFFE50914);
+      case 'prime video':
+      case 'prime':
+      case 'amazon':
+        return const Color(0xFF00A8E1);
+      case 'disney+':
+      case 'disney':
+      case 'disney plus':
+        return const Color(0xFF113CCF);
+      case 'apple tv+':
+      case 'apple tv':
+      case 'apple':
+        return const Color(0xFF333336);
+      case 'max':
+      case 'hbo':
+      case 'hbo max':
+        return const Color(0xFF002BE7);
+      case 'hulu':
+        return const Color(0xFF1CE783);
+      case 'crunchyroll':
+        return const Color(0xFFF47521);
+      case 'youtube':
+        return const Color(0xFFFF0000);
+      case 'local media':
+      case 'local':
+      case 'file':
+        return primary;
+      default:
+        return const Color(0xFF64748B);
+    }
+  }
+
   static ThemeData get darkTheme {
     final colorScheme = const ColorScheme.dark().copyWith(
       primary: primary,

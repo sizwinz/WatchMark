@@ -89,8 +89,14 @@ class SearchCard extends ConsumerWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        side: BorderSide(color: AppTheme.border(context), width: 1),
+      ),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -103,53 +109,105 @@ class SearchCard extends ConsumerWidget {
                       imageUrl: posterUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                         child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
-                        child: const Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
+                        child: const Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     )
                   else
                     Container(
-                      color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                      color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                       child: const Center(
-                        child: Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        child: Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  // Gradient Vignette overlay
+                  Positioned.fill(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        isMovie ? 'MOVIE' : 'TV',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primary,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.35),
+                            Colors.transparent,
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.5),
+                          ],
+                          stops: const [0.0, 0.25, 0.7, 1.0],
                         ),
                       ),
                     ),
                   ),
                   Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 0.8),
+                      ),
+                      child: Text(
+                        isMovie ? 'MOVIE' : 'SERIES',
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (item.voteAverage != null && item.voteAverage! > 0)
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, size: 13, color: AppTheme.warning),
+                            const SizedBox(width: 3),
+                            Text(
+                              item.voteAverage!.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  Positioned(
                     top: 4,
                     right: 4,
                     child: PopupMenuButton<String>(
                       icon: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
+                          color: Colors.black.withValues(alpha: 0.65),
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
                         ),
-                        child: const Icon(Icons.bookmark_add_outlined, size: 18, color: Colors.white),
+                        child: const Icon(Icons.bookmark_add_outlined, size: 16, color: Colors.white),
                       ),
                       onSelected: (status) => _updateStatus(context, ref, status),
                       itemBuilder: (context) => const [
@@ -165,7 +223,7 @@ class SearchCard extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -176,28 +234,13 @@ class SearchCard extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        year,
-                        style: TextStyle(fontSize: 11, color: AppTheme.textMuted(context)),
-                      ),
-                      if (item.voteAverage != null && item.voteAverage! > 0)
-                        Row(
-                          children: [
-                            const Icon(Icons.star_rounded, size: 14, color: AppTheme.warning),
-                            const SizedBox(width: 2),
-                            Text(
-                              item.voteAverage!.toStringAsFixed(1),
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                    ],
+                  Text(
+                    year.isNotEmpty ? year : (isMovie ? 'Movie' : 'Series'),
+                    style: TextStyle(fontSize: 11, color: AppTheme.textMuted(context)),
                   ),
                 ],
               ),

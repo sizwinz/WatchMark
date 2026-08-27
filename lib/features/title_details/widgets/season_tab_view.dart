@@ -97,6 +97,11 @@ class SeasonTabView extends StatelessWidget {
 
               return Card(
                 clipBehavior: Clip.antiAlias,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+                  side: BorderSide(color: AppTheme.border(context), width: 1),
+                ),
                 child: InkWell(
                   onTap: () {
                     ProgressModalSheet.show(
@@ -109,6 +114,7 @@ class SeasonTabView extends StatelessWidget {
                       isMovie: false,
                     );
                   },
+                  borderRadius: BorderRadius.circular(AppTheme.cardRadius),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -120,18 +126,22 @@ class SeasonTabView extends StatelessWidget {
                                 imageUrl: stillUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
-                                  color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                                  color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                                   child: const Center(
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
                                   ),
                                 ),
                                 errorWidget: (context, url, error) => Container(
-                                  color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                                  color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                                   child: const Icon(Icons.tv, color: Colors.grey),
                                 ),
                               )
                             : Container(
-                                color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                                color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                                 child: const Icon(Icons.tv, color: Colors.grey),
                               ),
                       ),

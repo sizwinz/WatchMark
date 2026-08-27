@@ -87,8 +87,14 @@ class LibraryCard extends ConsumerWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        side: BorderSide(color: AppTheme.border(context), width: 1),
+      ),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -101,19 +107,25 @@ class LibraryCard extends ConsumerWidget {
                       imageUrl: posterUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
-                        child: const Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
+                        child: const Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     )
                   else
                     Container(
-                      color: AppTheme.isDark(context) ? const Color(0xFF1E232E) : const Color(0xFFE2E6EE),
+                      color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                       child: const Center(
-                        child: Icon(Icons.movie_outlined, size: 40, color: Colors.grey),
+                        child: Icon(Icons.movie_outlined, size: 36, color: Colors.grey),
                       ),
                     ),
                   // Status badge top-left
@@ -121,16 +133,24 @@ class LibraryCard extends ConsumerWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(4),
+                        color: statusColor.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Text(
                         _formatStatus(item.entry.status).toUpperCase(),
                         style: const TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
                           color: Colors.white,
                         ),
                       ),

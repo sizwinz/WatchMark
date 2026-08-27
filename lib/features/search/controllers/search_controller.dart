@@ -8,6 +8,9 @@ class SearchState {
   final List<TmdbSearchResult> results;
   final String? errorMessage;
   final List<String> recentQueries;
+  final List<TmdbSearchResult> trendingResults;
+  final bool isLoadingTrending;
+  final String trendingCategory; // 'all', 'movie', 'tv'
 
   const SearchState({
     this.query = '',
@@ -15,6 +18,9 @@ class SearchState {
     this.results = const [],
     this.errorMessage,
     this.recentQueries = const [],
+    this.trendingResults = const [],
+    this.isLoadingTrending = false,
+    this.trendingCategory = 'all',
   });
 
   SearchState copyWith({
@@ -23,6 +29,9 @@ class SearchState {
     List<TmdbSearchResult>? results,
     String? errorMessage,
     List<String>? recentQueries,
+    List<TmdbSearchResult>? trendingResults,
+    bool? isLoadingTrending,
+    String? trendingCategory,
   }) {
     return SearchState(
       query: query ?? this.query,
@@ -30,6 +39,9 @@ class SearchState {
       results: results ?? this.results,
       errorMessage: errorMessage,
       recentQueries: recentQueries ?? this.recentQueries,
+      trendingResults: trendingResults ?? this.trendingResults,
+      isLoadingTrending: isLoadingTrending ?? this.isLoadingTrending,
+      trendingCategory: trendingCategory ?? this.trendingCategory,
     );
   }
 }
@@ -39,6 +51,34 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
   Timer? _debounceTimer;
 
   SearchStateNotifier(this._tmdbService) : super(const SearchState());
+
+  Future<void> loadTrending({String? category}) async {
+    final cat = category ?? state.trendingCategory;
+    state = state.copyWith(isLoadingTrending: true, trendingCategory: cat);
+
+    try {
+      List<TmdbSearchResult> results;
+      if (cat == 'movie') {
+        results = await _tmdbService.getPopularMovies();
+      } else if (cat == 'tv') {
+        results = await _tmdbService.getPopularTv();
+      } else {
+        results = await _tmdbService.getTrending();
+      }
+
+      state = state.copyWith(
+        trendingResults: results,
+        isLoadingTrending: false,
+      );
+    } catch (_) {
+      state = state.copyWith(isLoadingTrending: false);
+    }
+  }
+
+  void setTrendingCategory(String category) {
+    if (state.trendingCategory == category) return;
+    loadTrending(category: category);
+  }
 
   void onQueryChanged(String newQuery) {
     _debounceTimer?.cancel();

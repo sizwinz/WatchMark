@@ -314,6 +314,64 @@ class TmdbApiService {
       return [];
     }
   }
+
+  Future<List<TmdbSearchResult>> getTrending({String timeWindow = 'day', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/trending/all/$timeWindow',
+        queryParameters: {
+          'page': page,
+        },
+      );
+      final results = response.data['results'] as List<dynamic>? ?? [];
+      return results
+          .where((r) => r['media_type'] == 'movie' || r['media_type'] == 'tv')
+          .map((r) => TmdbSearchResult.fromJson(r as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<TmdbSearchResult>> getPopularMovies({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/movie/popular',
+        queryParameters: {
+          'page': page,
+        },
+      );
+      final results = response.data['results'] as List<dynamic>? ?? [];
+      return results
+          .map((r) => TmdbSearchResult.fromJson({
+                ...r as Map<String, dynamic>,
+                'media_type': 'movie',
+              }))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<TmdbSearchResult>> getPopularTv({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/tv/popular',
+        queryParameters: {
+          'page': page,
+        },
+      );
+      final results = response.data['results'] as List<dynamic>? ?? [];
+      return results
+          .map((r) => TmdbSearchResult.fromJson({
+                ...r as Map<String, dynamic>,
+                'media_type': 'tv',
+              }))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }
 
 final tmdbApiServiceProvider = Provider<TmdbApiService>((ref) {
