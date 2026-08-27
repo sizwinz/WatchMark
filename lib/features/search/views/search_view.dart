@@ -74,6 +74,31 @@ class _SearchViewState extends ConsumerState<SearchView> {
                 padding: EdgeInsets.symmetric(vertical: 32),
                 child: Center(child: CircularProgressIndicator()),
               )
+            else if (searchState.errorMessage != null)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
+                      const SizedBox(height: 12),
+                      Text(
+                        searchState.errorMessage!,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(searchControllerProvider.notifier).onQueryChanged(_textController.text);
+                        },
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             else if (searchState.query.isEmpty)
               const Expanded(
                 child: SingleChildScrollView(

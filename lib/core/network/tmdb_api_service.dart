@@ -257,24 +257,20 @@ class TmdbApiService {
   Future<List<TmdbSearchResult>> multiSearch(String query, {int page = 1}) async {
     if (query.trim().isEmpty) return [];
 
-    try {
-      final response = await _dio.get(
-        '/search/multi',
-        queryParameters: {
-          'query': query.trim(),
-          'page': page,
-          'include_adult': false,
-        },
-      );
+    final response = await _dio.get(
+      '/search/multi',
+      queryParameters: {
+        'query': query.trim(),
+        'page': page,
+        'include_adult': false,
+      },
+    );
 
-      final results = response.data['results'] as List<dynamic>? ?? [];
-      return results
-          .where((r) => r['media_type'] == 'movie' || r['media_type'] == 'tv')
-          .map((r) => TmdbSearchResult.fromJson(r as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      return [];
-    }
+    final results = response.data['results'] as List<dynamic>? ?? [];
+    return results
+        .where((r) => r['media_type'] == 'movie' || r['media_type'] == 'tv')
+        .map((r) => TmdbSearchResult.fromJson(r as Map<String, dynamic>))
+        .toList();
   }
 
   Future<TmdbMediaDetail?> getMovieDetails(int tmdbId) async {
