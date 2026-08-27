@@ -1,0 +1,60 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Windows specific
+windows/flutter/ephemeral/
+windows/flutter/Generated.props
+windows/flutter/Generated.props.template
+windows/flutter/Generated.props.version
+windows/flutter/Generated.vcxproj
+windows/flutter/Generated.vcxproj.filters
+windows/flutter/flutter_assemble.vcxproj
+windows/flutter/flutter_assemble.vcxproj.filters
+
+# Linux specific
+linux/flutter/ephemeral/
+
+# macOS specific
+macos/Flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Android specific
+android/local.properties
+android/.gradle
+android/captures/
+android/gradle/wrapper/gradle-wrapper.jar
+android/app/build/
+
+# Agent & planning directories
+.planning/
+.agents/
+.codex/
+docs/superpowers/
