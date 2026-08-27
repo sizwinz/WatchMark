@@ -16,6 +16,22 @@ WatchMark is an open-source, local-first media tracker engineered for Android, W
 
 ---
 
+## App Screenshots
+
+<div align="center">
+
+| Home Dashboard | Search & Discovery | Media Library |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/home_dashboard.png" width="230" alt="Home Dashboard" /> | <img src="docs/screenshots/search_discovery.png" width="230" alt="Search & Discovery" /> | <img src="docs/screenshots/library_collection.png" width="230" alt="Media Library" /> |
+
+| Watch History | Cloud Sync & Settings | Storage & Privacy |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/watch_history.png" width="230" alt="Watch History" /> | <img src="docs/screenshots/settings_sync.png" width="230" alt="Settings & Cloud Sync" /> | <img src="docs/screenshots/settings_legal.png" width="230" alt="Storage & Legal" /> |
+
+</div>
+
+---
+
 ## Key Highlights
 
 - **Timestamp-Accurate Progress:** Track movies and TV episodes down to the exact minute. Scrub with the slider, tap quick increments (`+5m`, `+15m`, `+30m`), or enter exact timestamps.
@@ -155,6 +171,8 @@ flutter test
 
 ---
 
-## License
-
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for complete details.
+## License & Legal
+ 
+- **License:** Distributed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for complete details.
+- **Privacy Policy:** Read our privacy guarantees in [PRIVACY.md](PRIVACY.md).
+- **Terms of Service:** Review the terms and third-party disclaimers in [TERMS.md](TERMS.md).
