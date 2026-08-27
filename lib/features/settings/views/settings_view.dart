@@ -219,6 +219,25 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
                   ),
                   const SizedBox(height: 12),
                   const Divider(),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.privacy_tip_outlined, color: AppTheme.primary, size: 20),
+                    title: const Text('Privacy Policy', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('Local-first storage, zero telemetry, Google Drive scope', style: TextStyle(fontSize: 12, color: AppTheme.textMuted(context))),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    onTap: () => _showPrivacyPolicy(context),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.description_outlined, color: AppTheme.primary, size: 20),
+                    title: const Text('Terms of Service', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text('GPL-3.0 copyleft terms, TMDB & Google API disclaimers', style: TextStyle(fontSize: 12, color: AppTheme.textMuted(context))),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    onTap: () => _showTermsOfService(context),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(),
                   const SizedBox(height: 12),
                   const Row(
                     children: [
@@ -240,6 +259,126 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
             ),
           ),
           const SizedBox(height: 48),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.privacy_tip_outlined, color: AppTheme.primary),
+            SizedBox(width: 10),
+            Text('Privacy Policy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Local-First & Zero Telemetry',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'WatchMark is built with privacy by design. All your media tracking, watch sessions, custom lists, and progress are stored 100% locally on your device in an isolated SQLite database. The app contains zero telemetry, zero analytics SDKs, and zero third-party tracking scripts.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'TMDB API Usage',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Media metadata, posters, and episode summaries are fetched directly from The Movie Database (TMDB) via secure HTTPS requests. Your personal watch logs and identities are never shared with TMDB.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Google Drive Sync',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Cloud synchronization uses Google OAuth strictly scoped to your private appDataFolder. WatchMark cannot view or modify any other files in your Google Drive.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTermsOfService(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.description_outlined, color: AppTheme.primary),
+            SizedBox(width: 10),
+            Text('Terms of Service', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '1. Open Source License (GPL-3.0)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'WatchMark is free, open-source software licensed under the GNU General Public License v3.0. You may use, study, modify, and redistribute it under the terms of the GPL-3.0.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '2. Personal Tracking Utility Only',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'WatchMark is strictly a tracking and cataloging tool. WatchMark does NOT stream, host, download, or distribute any video, audio, or copyrighted media files.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '3. Third-Party Disclaimers',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'This product uses the TMDB API but is not endorsed or certified by TMDB. Google Drive is a trademark of Google LLC.',
+                  style: TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );
