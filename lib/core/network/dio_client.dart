@@ -13,12 +13,21 @@ class TmdbAuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final customKey = await _secureStorage.getCustomTmdbApiKey();
-    final effectiveKey = (customKey != null && customKey.trim().isNotEmpty)
-        ? customKey.trim()
-        : ApiEndpoints.defaultTmdbApiKey;
+    try {
+      final customKey = await _secureStorage.getCustomTmdbApiKey();
+      final effectiveKey = (customKey != null && customKey.trim().isNotEmpty)
+          ? customKey.trim()
+          : ApiEndpoints.defaultTmdbApiKey;
 
-    options.queryParameters['api_key'] = effectiveKey;
+      final queryParams = Map<String, dynamic>.from(options.queryParameters);
+      queryParams['api_key'] = effectiveKey;
+      options.queryParameters = queryParams;
+    } catch (_) {
+      final queryParams = Map<String, dynamic>.from(options.queryParameters);
+      queryParams['api_key'] = ApiEndpoints.defaultTmdbApiKey;
+      options.queryParameters = queryParams;
+    }
+
     handler.next(options);
   }
 }
@@ -31,8 +40,11 @@ final dioClientProvider = Provider<Dio>((ref) {
       baseUrl: ApiEndpoints.tmdbBaseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
       headers: {
         'Accept': 'application/json',
+        'User-Agent': 'WatchMark/1.0.0 (Android; Linux; Flutter; +https://github.com/sizwinz/WatchMark)',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
     ),
   );

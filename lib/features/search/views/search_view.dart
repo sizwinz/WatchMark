@@ -83,25 +83,28 @@ class _SearchViewState extends ConsumerState<SearchView> {
             else if (searchState.errorMessage != null)
               Expanded(
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
-                      const SizedBox(height: 12),
-                      Text(
-                        searchState.errorMessage!,
-                        style: const TextStyle(color: Colors.grey, fontSize: 14),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          ref.read(searchControllerProvider.notifier).onQueryChanged(_textController.text);
-                        },
-                        icon: const Icon(Icons.refresh, size: 16),
-                        label: const Text('Retry'),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
+                        const SizedBox(height: 12),
+                        Text(
+                          searchState.errorMessage!,
+                          style: const TextStyle(color: Colors.grey, fontSize: 13.5, height: 1.4),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            ref.read(searchControllerProvider.notifier).onQueryChanged(_textController.text);
+                          },
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Retry'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )

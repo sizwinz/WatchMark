@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:watchmark/core/network/tmdb_api_service.dart';
 
@@ -111,10 +112,23 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
         errorMessage: null,
       );
     } catch (e) {
+      String message = 'Failed to load search results';
+      if (e is DioException) {
+        final errStr = e.error?.toString() ?? '';
+        if (e.type == DioExceptionType.connectionError || errStr.contains('Failed host lookup') || errStr.contains('SocketException')) {
+          message = 'Network error: Cannot reach TMDB server.\nIf your cellular/Wi-Fi ISP blocks TMDB, enable Private DNS (dns.google or 1dot1dot1dot1.cloudflare-dns.com) in phone Settings.';
+        } else if (e.response?.statusCode == 401) {
+          message = 'Invalid TMDB API key. Check TMDB configuration in Settings.';
+        } else if (e.response?.statusCode == 429) {
+          message = 'TMDB rate limit exceeded. Please wait a moment.';
+        } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+          message = 'Connection timed out. Please check your network connection.';
+        }
+      }
       state = state.copyWith(
         results: const [],
         isLoading: false,
-        errorMessage: 'Failed to load search results',
+        errorMessage: message,
       );
     }
   }
