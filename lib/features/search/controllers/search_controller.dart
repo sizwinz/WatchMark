@@ -50,6 +50,7 @@ class SearchState {
 class SearchStateNotifier extends StateNotifier<SearchState> {
   final TmdbApiService _tmdbService;
   Timer? _debounceTimer;
+  CancelToken? _searchCancelToken;
 
   SearchStateNotifier(this._tmdbService) : super(const SearchState());
 
@@ -87,6 +88,7 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
 
     final cleanQuery = newQuery.trim();
     if (cleanQuery.length < 2) {
+      _searchCancelToken?.cancel();
       state = state.copyWith(
         results: const [],
         isLoading: false,
@@ -101,10 +103,13 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
   }
 
   Future<void> _executeSearch(String query) async {
+    _searchCancelToken?.cancel();
+    _searchCancelToken = CancelToken();
+
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final results = await _tmdbService.multiSearch(query);
+      final results = await _tmdbService.multiSearch(query, cancelToken: _searchCancelToken);
       _addRecentQuery(query);
       state = state.copyWith(
         results: results,
@@ -112,6 +117,9 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
         errorMessage: null,
       );
     } catch (e) {
+      if (e is DioException && CancelToken.isCancel(e)) {
+        return;
+      }
       String message = 'Failed to load search results';
       if (e is DioException) {
         final errStr = e.error?.toString() ?? '';
@@ -163,6 +171,7 @@ class SearchStateNotifier extends StateNotifier<SearchState> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _searchCancelToken?.cancel();
     super.dispose();
   }
 }

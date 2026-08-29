@@ -254,7 +254,7 @@ class TmdbApiService {
 
   TmdbApiService(this._dio);
 
-  Future<List<TmdbSearchResult>> multiSearch(String query, {int page = 1}) async {
+  Future<List<TmdbSearchResult>> multiSearch(String query, {int page = 1, CancelToken? cancelToken}) async {
     if (query.trim().isEmpty) return [];
 
     final response = await _dio.get(
@@ -264,6 +264,7 @@ class TmdbApiService {
         'page': page,
         'include_adult': false,
       },
+      cancelToken: cancelToken,
     );
 
     final results = response.data['results'] as List<dynamic>? ?? [];

@@ -19,7 +19,7 @@ class FakeTmdbApiService extends TmdbApiService {
   Future<List<TmdbSearchResult>> getPopularTv({int page = 1}) async => [];
 
   @override
-  Future<List<TmdbSearchResult>> multiSearch(String query, {int page = 1}) async => [];
+  Future<List<TmdbSearchResult>> multiSearch(String query, {int page = 1, CancelToken? cancelToken}) async => [];
 }
 
 void main() {
