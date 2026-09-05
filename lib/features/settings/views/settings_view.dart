@@ -205,7 +205,7 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
                             ),
                           ),
                           Text(
-                            'Version 1.0.0+1 (Cross-Platform)',
+                            'Version 1.0.0-beta.3 (Cross-Platform)',
                             style: TextStyle(fontSize: 12, color: AppTheme.textMuted(context)),
                           ),
                         ],

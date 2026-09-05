@@ -1,7 +1,7 @@
 name: watchmark
 description: "A local-first movie and series tracking application for Android and Desktop."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.12.0
