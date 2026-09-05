@@ -81,6 +81,42 @@ class AppTheme {
     }
   }
 
+  static String getPlatformDisplayName(String? platform) {
+    if (platform == null) return 'Other';
+    switch (platform.toLowerCase().trim()) {
+      case 'netflix':
+        return 'Netflix';
+      case 'prime':
+      case 'prime video':
+      case 'amazon':
+        return 'Prime Video';
+      case 'disney':
+      case 'disney+':
+      case 'disney plus':
+        return 'Disney+';
+      case 'apple_tv':
+      case 'apple tv':
+      case 'apple tv+':
+      case 'apple':
+        return 'Apple TV+';
+      case 'max':
+      case 'hbo':
+      case 'hbo max':
+        return 'Max';
+      case 'hulu':
+        return 'Hulu';
+      case 'crunchyroll':
+        return 'Crunchyroll';
+      case 'youtube':
+        return 'YouTube';
+      case 'local':
+      case 'local media':
+        return 'Local Media';
+      default:
+        return 'Other';
+    }
+  }
+
   static ThemeData get darkTheme {
     final colorScheme = const ColorScheme.dark().copyWith(
       primary: primary,

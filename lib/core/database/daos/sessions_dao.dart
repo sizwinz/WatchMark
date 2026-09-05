@@ -41,6 +41,14 @@ class SessionsDao extends DatabaseAccessor<AppDatabase> with _$SessionsDaoMixin 
     return query.watch();
   }
 
+  Future<WatchSession?> getLatestSessionForMedia(String mediaId) {
+    final query = select(watchSessions)
+      ..where((tbl) => tbl.mediaId.equals(mediaId) & tbl.deletedAt.isNull())
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.startedAt)])
+      ..limit(1);
+    return query.getSingleOrNull();
+  }
+
   Stream<List<WatchSessionWithMedia>> watchAllSessionsWithMedia({bool includeDeleted = false}) {
     final query = select(watchSessions).join([
       innerJoin(mediaTitles, mediaTitles.id.equalsExp(watchSessions.mediaId)),

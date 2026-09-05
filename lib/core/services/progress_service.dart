@@ -35,19 +35,22 @@ class ProgressService {
     final oldProgress = existing?.progressSeconds ?? 0;
     final deltaSeconds = newProgressSeconds - oldProgress;
 
-    // Log a session if progress advanced
-    if (deltaSeconds > 0) {
+    // Log a session if progress advanced or if a platform was explicitly tagged
+    final shouldLogSession = deltaSeconds > 0 || (platform != null && platform.isNotEmpty);
+    if (shouldLogSession) {
       final sessionId = generateUuidV7();
+      final effectiveDelta = deltaSeconds > 0 ? deltaSeconds : 0;
+      final effectiveMethod = deltaSeconds > 0 ? entryMethod : 'platform_tag';
       final sessionCompanion = WatchSessionsCompanion.insert(
         id: drift.Value(sessionId),
         mediaId: mediaId,
         episodeId: drift.Value(episodeId),
-        startedAt: DateTime.now().subtract(Duration(seconds: deltaSeconds)),
+        startedAt: DateTime.now().subtract(Duration(seconds: effectiveDelta)),
         endedAt: DateTime.now(),
         positionBeforeSeconds: drift.Value(oldProgress),
         positionAfterSeconds: newProgressSeconds,
         provider: drift.Value(platform ?? 'other'),
-        entryMethod: drift.Value(entryMethod),
+        entryMethod: drift.Value(effectiveMethod),
         updatedAt: drift.Value(DateTime.now()),
         deletedAt: const drift.Value(null),
       );
@@ -61,12 +64,12 @@ class ProgressService {
           'id': sessionId,
           'mediaId': mediaId,
           'episodeId': episodeId,
-          'startedAt': DateTime.now().subtract(Duration(seconds: deltaSeconds)).toIso8601String(),
+          'startedAt': DateTime.now().subtract(Duration(seconds: effectiveDelta)).toIso8601String(),
           'endedAt': DateTime.now().toIso8601String(),
           'positionBeforeSeconds': oldProgress,
           'positionAfterSeconds': newProgressSeconds,
           'provider': platform ?? 'other',
-          'entryMethod': entryMethod,
+          'entryMethod': effectiveMethod,
           'createdAt': DateTime.now().toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
         },
@@ -117,12 +120,18 @@ class ProgressService {
     final currentProgress = existing?.progressSeconds ?? 0;
     final newProgress = (currentProgress + deltaSeconds).clamp(0, 86400);
 
+    String? effectivePlatform = platform;
+    if (effectivePlatform == null) {
+      final latestSession = await sessionsDao.getLatestSessionForMedia(mediaId);
+      effectivePlatform = latestSession?.provider;
+    }
+
     await updateProgress(
       mediaId: mediaId,
       newProgressSeconds: newProgress,
       seasonNumber: seasonNumber,
       episodeNumber: episodeNumber,
-      platform: platform,
+      platform: effectivePlatform,
       episodeId: episodeId,
       entryMethod: 'quick_increment',
     );
@@ -140,6 +149,12 @@ class ProgressService {
     final oldProgress = existing?.progressSeconds ?? 0;
     final deltaSeconds = (runtimeSeconds - oldProgress).clamp(0, runtimeSeconds);
 
+    String? effectivePlatform = platform;
+    if (effectivePlatform == null) {
+      final latestSession = await sessionsDao.getLatestSessionForMedia(mediaId);
+      effectivePlatform = latestSession?.provider;
+    }
+
     if (deltaSeconds > 0) {
       final sessionId = generateUuidV7();
       await sessionsDao.insertSession(
@@ -150,7 +165,7 @@ class ProgressService {
           endedAt: DateTime.now(),
           positionBeforeSeconds: drift.Value(oldProgress),
           positionAfterSeconds: runtimeSeconds,
-          provider: drift.Value(platform ?? 'other'),
+          provider: drift.Value(effectivePlatform ?? 'other'),
           entryMethod: const drift.Value('manual'),
           updatedAt: drift.Value(DateTime.now()),
           deletedAt: const drift.Value(null),
@@ -168,7 +183,7 @@ class ProgressService {
           'endedAt': DateTime.now().toIso8601String(),
           'positionBeforeSeconds': oldProgress,
           'positionAfterSeconds': runtimeSeconds,
-          'provider': platform ?? 'other',
+          'provider': effectivePlatform ?? 'other',
           'entryMethod': 'manual',
           'createdAt': DateTime.now().toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
@@ -229,6 +244,12 @@ class ProgressService {
         : 0;
     final deltaSeconds = (epDuration - oldProgress).clamp(0, epDuration);
 
+    String? effectivePlatform = platform;
+    if (effectivePlatform == null) {
+      final latestSession = await sessionsDao.getLatestSessionForMedia(mediaId);
+      effectivePlatform = latestSession?.provider;
+    }
+
     if (deltaSeconds > 0) {
       final sessionId = generateUuidV7();
       await sessionsDao.insertSession(
@@ -240,7 +261,7 @@ class ProgressService {
           endedAt: DateTime.now(),
           positionBeforeSeconds: drift.Value(oldProgress),
           positionAfterSeconds: epDuration,
-          provider: drift.Value(platform ?? 'other'),
+          provider: drift.Value(effectivePlatform ?? 'other'),
           entryMethod: const drift.Value('manual'),
           updatedAt: drift.Value(DateTime.now()),
           deletedAt: const drift.Value(null),
@@ -259,7 +280,7 @@ class ProgressService {
           'endedAt': DateTime.now().toIso8601String(),
           'positionBeforeSeconds': oldProgress,
           'positionAfterSeconds': epDuration,
-          'provider': platform ?? 'other',
+          'provider': effectivePlatform ?? 'other',
           'entryMethod': 'manual',
           'createdAt': DateTime.now().toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),

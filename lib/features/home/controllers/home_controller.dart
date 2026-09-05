@@ -11,6 +11,7 @@ class ContinueWatchingItem {
   final Episode? currentEpisode;
   final int totalRuntimeSeconds;
   final int progressPercentage;
+  final String? platform;
 
   const ContinueWatchingItem({
     required this.entry,
@@ -18,6 +19,7 @@ class ContinueWatchingItem {
     this.currentEpisode,
     required this.totalRuntimeSeconds,
     required this.progressPercentage,
+    this.platform,
   });
 }
 
@@ -41,6 +43,7 @@ final continueWatchingStreamProvider =
     StreamProvider.autoDispose<List<ContinueWatchingItem>>((ref) {
   final libraryDao = ref.watch(libraryDaoProvider);
   final mediaDao = ref.watch(mediaDaoProvider);
+  final sessionsDao = ref.watch(sessionsDaoProvider);
 
   return libraryDao.watchLibraryWithMedia().asyncMap((items) async {
     final inProgressItems = items
@@ -82,6 +85,7 @@ final continueWatchingStreamProvider =
       if (totalSeconds <= 0) totalSeconds = 3600;
       final progressSecs = item.entry.progressSeconds;
       final percentage = ((progressSecs / totalSeconds) * 100).clamp(0, 100).toInt();
+      final latestSession = await sessionsDao.getLatestSessionForMedia(item.media.id);
 
       results.add(
         ContinueWatchingItem(
@@ -90,6 +94,7 @@ final continueWatchingStreamProvider =
           currentEpisode: episode,
           totalRuntimeSeconds: totalSeconds,
           progressPercentage: percentage,
+          platform: latestSession?.provider,
         ),
       );
     }

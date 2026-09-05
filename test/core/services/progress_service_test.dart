@@ -212,5 +212,41 @@ void main() {
       expect(entry!.progressSeconds, 300);
       expect(entry.status, 'paused');
     });
+
+    test('updateProgress logs session when platform is specified even with 0 delta', () async {
+      const mediaId = 'tagging-media-1';
+      await db.mediaDao.upsertTitle(
+        MediaTitlesCompanion.insert(
+          id: const drift.Value(mediaId),
+          tmdbId: '600',
+          mediaType: 'tv',
+          title: 'Platform Tag Test',
+        ),
+      );
+
+      // User selects Apple TV+ on an unstarted series (progress 0)
+      await service.updateProgress(
+        mediaId: mediaId,
+        newProgressSeconds: 0,
+        platform: 'apple_tv',
+      );
+
+      final sessions = await db.sessionsDao.getAllSessions();
+      expect(sessions.length, 1);
+      expect(sessions.first.provider, 'apple_tv');
+
+      final latest = await db.sessionsDao.getLatestSessionForMedia(mediaId);
+      expect(latest?.provider, 'apple_tv');
+
+      // Subsequent quick increment inherits apple_tv
+      await service.incrementProgress(
+        mediaId: mediaId,
+        deltaSeconds: 900,
+      );
+
+      final updatedSessions = await db.sessionsDao.getAllSessions();
+      expect(updatedSessions.length, 2);
+      expect(updatedSessions.first.provider, 'apple_tv');
+    });
   });
 }

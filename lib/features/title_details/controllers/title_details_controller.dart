@@ -21,6 +21,7 @@ class TitleDetailsState {
   final Episode? activeEpisode;
   final int totalEpisodesCount;
   final int watchedEpisodesCount;
+  final String? currentPlatform;
 
   const TitleDetailsState({
     this.isLoading = true,
@@ -34,6 +35,7 @@ class TitleDetailsState {
     this.activeEpisode,
     this.totalEpisodesCount = 0,
     this.watchedEpisodesCount = 0,
+    this.currentPlatform,
   });
 
   TitleDetailsState copyWith({
@@ -48,6 +50,7 @@ class TitleDetailsState {
     Episode? activeEpisode,
     int? totalEpisodesCount,
     int? watchedEpisodesCount,
+    String? currentPlatform,
   }) {
     return TitleDetailsState(
       isLoading: isLoading ?? this.isLoading,
@@ -61,6 +64,7 @@ class TitleDetailsState {
       activeEpisode: activeEpisode ?? this.activeEpisode,
       totalEpisodesCount: totalEpisodesCount ?? this.totalEpisodesCount,
       watchedEpisodesCount: watchedEpisodesCount ?? this.watchedEpisodesCount,
+      currentPlatform: currentPlatform ?? this.currentPlatform,
     );
   }
 }
@@ -74,6 +78,7 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
   final String mediaType;
 
   StreamSubscription<LibraryEntry?>? _entrySubscription;
+  StreamSubscription<List<WatchSession>>? _sessionsSubscription;
 
   TitleDetailsController({
     required this.tmdbService,
@@ -141,6 +146,12 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
         _entrySubscription = libraryDao.watchLibraryEntryByMediaId(cachedTitle.id).listen((updatedEntry) {
           state = state.copyWith(libraryEntry: updatedEntry);
           _calculateWatchedCountAndActiveEp(updatedEntry);
+        });
+
+        _sessionsSubscription?.cancel();
+        _sessionsSubscription = progressService.sessionsDao.watchSessionsForMedia(cachedTitle.id).listen((sessions) {
+          final latest = sessions.firstOrNull;
+          state = state.copyWith(currentPlatform: latest?.provider);
         });
       }
 
@@ -299,7 +310,7 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
       mediaId: localTitle.id,
       seasonNumber: seasonNumber,
       episodeNumber: episodeNumber,
-      platform: platform,
+      platform: platform ?? state.currentPlatform,
     );
   }
 
@@ -309,7 +320,7 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
 
     await progressService.markMovieWatched(
       mediaId: localTitle.id,
-      platform: platform,
+      platform: platform ?? state.currentPlatform,
     );
   }
 
@@ -322,7 +333,7 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
       newProgressSeconds: 0,
       seasonNumber: 1,
       episodeNumber: 1,
-      platform: platform,
+      platform: platform ?? state.currentPlatform,
     );
   }
 
@@ -335,12 +346,14 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
       deltaSeconds: deltaSeconds,
       seasonNumber: state.libraryEntry?.currentSeason,
       episodeNumber: state.libraryEntry?.currentEpisode,
+      platform: state.currentPlatform,
     );
   }
 
   @override
   void dispose() {
     _entrySubscription?.cancel();
+    _sessionsSubscription?.cancel();
     super.dispose();
   }
 }

@@ -120,6 +120,7 @@ class TitleDetailsView extends ConsumerWidget {
                               title: detail.title,
                               totalDurationSeconds: totalSeconds,
                               initialProgressSeconds: state.libraryEntry?.progressSeconds ?? 0,
+                              initialPlatform: state.currentPlatform,
                               isMovie: true,
                             );
                           },
@@ -202,6 +203,7 @@ class TitleDetailsView extends ConsumerWidget {
                 currentProgressSeconds: state.libraryEntry?.progressSeconds ?? 0,
                 isSeriesCompleted: state.libraryEntry?.status == 'completed',
                 onMarkEpisodeWatched: (seasonNum, epNum) => controller.markEpisodeWatched(seasonNum, epNum),
+                currentPlatform: state.currentPlatform,
               ),
               const SizedBox(height: 32),
             ],
@@ -268,20 +270,41 @@ class TitleDetailsView extends ConsumerWidget {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                decoration: BoxDecoration(
-                  color: (isCompleted ? AppTheme.success : AppTheme.primary).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isCompleted ? '100%' : 'S$curSeason:E$curEp',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isCompleted ? AppTheme.success : AppTheme.primary,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (state.currentPlatform != null) ...[
+                    _buildPlatformBadge(context, state.currentPlatform!, onTap: () {
+                      ProgressModalSheet.show(
+                        context,
+                        mediaId: state.localTitle!.id,
+                        title: 'S$curSeason:E$curEp • $epTitle',
+                        totalDurationSeconds: epRuntimeSeconds,
+                        initialProgressSeconds: entry.progressSeconds,
+                        seasonNumber: curSeason,
+                        episodeNumber: curEp,
+                        initialPlatform: state.currentPlatform,
+                        isMovie: false,
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: (isCompleted ? AppTheme.success : AppTheme.primary).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isCompleted ? '100%' : 'S$curSeason:E$curEp',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isCompleted ? AppTheme.success : AppTheme.primary,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -411,6 +434,7 @@ class TitleDetailsView extends ConsumerWidget {
                             initialProgressSeconds: entry.progressSeconds,
                             seasonNumber: curSeason,
                             episodeNumber: curEp,
+                            initialPlatform: state.currentPlatform,
                             isMovie: false,
                           );
                         },
@@ -515,20 +539,39 @@ class TitleDetailsView extends ConsumerWidget {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: (isCompleted ? AppTheme.success : AppTheme.primary).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$progressPct%',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isCompleted ? AppTheme.success : AppTheme.primary,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (state.currentPlatform != null) ...[
+                    _buildPlatformBadge(context, state.currentPlatform!, onTap: () {
+                      ProgressModalSheet.show(
+                        context,
+                        mediaId: state.localTitle!.id,
+                        title: detail.title,
+                        totalDurationSeconds: totalSeconds,
+                        initialProgressSeconds: entry.progressSeconds,
+                        initialPlatform: state.currentPlatform,
+                        isMovie: true,
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (isCompleted ? AppTheme.success : AppTheme.primary).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$progressPct%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isCompleted ? AppTheme.success : AppTheme.primary,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -592,6 +635,7 @@ class TitleDetailsView extends ConsumerWidget {
                       title: detail.title,
                       totalDurationSeconds: totalSeconds,
                       initialProgressSeconds: entry.progressSeconds,
+                      initialPlatform: state.currentPlatform,
                       isMovie: true,
                     );
                   },
@@ -633,6 +677,39 @@ class TitleDetailsView extends ConsumerWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildPlatformBadge(BuildContext context, String platform, {VoidCallback? onTap}) {
+    final color = AppTheme.getPlatformColor(platform);
+    final name = AppTheme.getPlatformDisplayName(platform);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(radius: 3.5, backgroundColor: color),
+            const SizedBox(width: 5),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

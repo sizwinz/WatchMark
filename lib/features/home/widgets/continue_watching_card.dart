@@ -129,6 +129,38 @@ class ContinueWatchingCard extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  // Platform pill top-right
+                  if (item.platform != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: AppTheme.getPlatformColor(item.platform).withValues(alpha: 0.6),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(radius: 3, backgroundColor: AppTheme.getPlatformColor(item.platform)),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppTheme.getPlatformDisplayName(item.platform),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.getPlatformColor(item.platform),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Progress Bar on bottom edge of thumbnail
                   Positioned(
                     bottom: 0,
@@ -193,6 +225,7 @@ class ContinueWatchingCard extends ConsumerWidget {
                                     deltaSeconds: 15 * 60,
                                     seasonNumber: item.entry.currentSeason,
                                     episodeNumber: item.entry.currentEpisode,
+                                    platform: item.platform,
                                   );
                             },
                             borderRadius: BorderRadius.circular(4),
@@ -220,6 +253,7 @@ class ContinueWatchingCard extends ConsumerWidget {
                                 initialProgressSeconds: item.entry.progressSeconds,
                                 seasonNumber: item.entry.currentSeason,
                                 episodeNumber: item.entry.currentEpisode,
+                                initialPlatform: item.platform,
                                 isMovie: isMovie,
                               );
                             },

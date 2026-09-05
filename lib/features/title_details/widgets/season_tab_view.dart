@@ -18,6 +18,7 @@ class SeasonTabView extends StatelessWidget {
   final int currentProgressSeconds;
   final bool isSeriesCompleted;
   final void Function(int seasonNumber, int episodeNumber)? onMarkEpisodeWatched;
+  final String? currentPlatform;
 
   const SeasonTabView({
     super.key,
@@ -32,6 +33,7 @@ class SeasonTabView extends StatelessWidget {
     this.currentProgressSeconds = 0,
     this.isSeriesCompleted = false,
     this.onMarkEpisodeWatched,
+    this.currentPlatform,
   });
 
   @override
@@ -142,18 +144,21 @@ class SeasonTabView extends StatelessWidget {
                       initialProgressSeconds: isCurrent ? currentProgressSeconds : (isWatched ? runtimeSeconds : 0),
                       seasonNumber: selectedSeasonNumber,
                       episodeNumber: ep.episodeNumber,
+                      initialPlatform: currentPlatform,
                       isMovie: false,
                     );
                   },
                   borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 112,
-                        height: 78,
-                        child: Stack(
-                          fit: StackFit.expand,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 80),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(
+                            width: 112,
+                            child: Stack(
+                              fit: StackFit.expand,
                           children: [
                             if (stillUrl != null)
                               CachedNetworkImage(
@@ -327,6 +332,7 @@ class SeasonTabView extends StatelessWidget {
                                   initialProgressSeconds: isCurrent ? currentProgressSeconds : (isWatched ? runtimeSeconds : 0),
                                   seasonNumber: selectedSeasonNumber,
                                   episodeNumber: ep.episodeNumber,
+                                  initialPlatform: currentPlatform,
                                   isMovie: false,
                                 );
                               },
@@ -337,7 +343,9 @@ class SeasonTabView extends StatelessWidget {
                     ],
                   ),
                 ),
-              );
+              ),
+            ),
+          );
             },
           ),
       ],
