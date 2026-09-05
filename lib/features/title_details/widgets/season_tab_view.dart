@@ -13,6 +13,11 @@ class SeasonTabView extends StatelessWidget {
   final List<Episode> episodes;
   final bool isLoadingSeason;
   final ValueChanged<int> onSeasonSelected;
+  final int? currentSeason;
+  final int? currentEpisode;
+  final int currentProgressSeconds;
+  final bool isSeriesCompleted;
+  final void Function(int seasonNumber, int episodeNumber)? onMarkEpisodeWatched;
 
   const SeasonTabView({
     super.key,
@@ -22,6 +27,11 @@ class SeasonTabView extends StatelessWidget {
     required this.episodes,
     required this.isLoadingSeason,
     required this.onSeasonSelected,
+    this.currentSeason,
+    this.currentEpisode,
+    this.currentProgressSeconds = 0,
+    this.isSeriesCompleted = false,
+    this.onMarkEpisodeWatched,
   });
 
   @override
@@ -95,12 +105,32 @@ class SeasonTabView extends StatelessWidget {
               final stillUrl = ApiEndpoints.stillUrl(ep.stillPath, size: 'w300');
               final runtimeSeconds = (ep.runtimeMinutes ?? 45) * 60;
 
+              final isWatched = isSeriesCompleted ||
+                  (currentSeason != null &&
+                      (selectedSeasonNumber < currentSeason! ||
+                          (selectedSeasonNumber == currentSeason! &&
+                              ep.episodeNumber < (currentEpisode ?? 1))));
+
+              final isCurrent = !isSeriesCompleted &&
+                  currentSeason != null &&
+                  selectedSeasonNumber == currentSeason &&
+                  ep.episodeNumber == (currentEpisode ?? 1);
+
+              final currentEpProgressPct = isCurrent && runtimeSeconds > 0
+                  ? ((currentProgressSeconds / runtimeSeconds) * 100).clamp(0, 100).toInt()
+                  : 0;
+
               return Card(
                 clipBehavior: Clip.antiAlias,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                  side: BorderSide(color: AppTheme.border(context), width: 1),
+                  side: BorderSide(
+                    color: isCurrent
+                        ? AppTheme.primary.withValues(alpha: 0.6)
+                        : AppTheme.border(context),
+                    width: isCurrent ? 1.5 : 1,
+                  ),
                 ),
                 child: InkWell(
                   onTap: () {
@@ -109,6 +139,7 @@ class SeasonTabView extends StatelessWidget {
                       mediaId: mediaId,
                       title: '${ep.episodeNumber}. ${ep.title}',
                       totalDurationSeconds: runtimeSeconds,
+                      initialProgressSeconds: isCurrent ? currentProgressSeconds : (isWatched ? runtimeSeconds : 0),
                       seasonNumber: selectedSeasonNumber,
                       episodeNumber: ep.episodeNumber,
                       isMovie: false,
@@ -120,9 +151,12 @@ class SeasonTabView extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 120,
-                        height: 80,
-                        child: stillUrl != null
-                            ? CachedNetworkImage(
+                        height: 86,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (stillUrl != null)
+                              CachedNetworkImage(
                                 imageUrl: stillUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
@@ -140,10 +174,59 @@ class SeasonTabView extends StatelessWidget {
                                   child: const Icon(Icons.tv, color: Colors.grey),
                                 ),
                               )
-                            : Container(
+                            else
+                              Container(
                                 color: AppTheme.isDark(context) ? const Color(0xFF161A22) : const Color(0xFFE2E6EE),
                                 child: const Icon(Icons.tv, color: Colors.grey),
                               ),
+
+                            // Watched overlay
+                            if (isWatched)
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                child: const Center(
+                                  child: Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 28),
+                                ),
+                              ),
+
+                            // Active episode badge
+                            if (isCurrent)
+                              Positioned(
+                                top: 6,
+                                left: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primary,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'WATCHING',
+                                    style: TextStyle(
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.4,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            // Progress bar on current episode thumbnail
+                            if (isCurrent && currentProgressSeconds > 0)
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: LinearProgressIndicator(
+                                  value: (currentEpProgressPct / 100).clamp(0.0, 1.0),
+                                  backgroundColor: Colors.black.withValues(alpha: 0.4),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                                  minHeight: 3.5,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       Expanded(
                         child: Padding(
@@ -155,20 +238,37 @@ class SeasonTabView extends StatelessWidget {
                                 '${ep.episodeNumber}. ${ep.title}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
+                                  color: isCurrent ? AppTheme.primary : AppTheme.textPrimary(context),
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              if (ep.runtimeMinutes != null && ep.runtimeMinutes! > 0)
-                                Text(
-                                  '${ep.runtimeMinutes}m',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppTheme.textMuted(context),
-                                  ),
-                                ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  if (ep.runtimeMinutes != null && ep.runtimeMinutes! > 0)
+                                    Text(
+                                      '${ep.runtimeMinutes}m',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppTheme.textMuted(context),
+                                      ),
+                                    ),
+                                  if (isCurrent && currentProgressSeconds > 0) ...[
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '• ${currentProgressSeconds ~/ 60}m watched ($currentEpProgressPct%)',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                               if (ep.overview != null && ep.overview!.isNotEmpty) ...[
                                 const SizedBox(height: 4),
                                 Text(
@@ -185,19 +285,47 @@ class SeasonTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.timer_outlined, size: 20, color: AppTheme.primary),
-                        onPressed: () {
-                          ProgressModalSheet.show(
-                            context,
-                            mediaId: mediaId,
-                            title: '${ep.episodeNumber}. ${ep.title}',
-                            totalDurationSeconds: runtimeSeconds,
-                            seasonNumber: selectedSeasonNumber,
-                            episodeNumber: ep.episodeNumber,
-                            isMovie: false,
-                          );
-                        },
+                      // Action buttons
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, right: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isWatched
+                                    ? Icons.check_circle_rounded
+                                    : (isCurrent ? Icons.play_circle_fill_rounded : Icons.check_circle_outline_rounded),
+                                size: 22,
+                                color: isWatched
+                                    ? AppTheme.success
+                                    : (isCurrent ? AppTheme.primary : AppTheme.textMuted(context)),
+                              ),
+                              tooltip: isWatched
+                                  ? 'Watched (Tap to re-log)'
+                                  : (isCurrent ? 'Mark this episode watched & advance' : 'Mark as watched'),
+                              onPressed: () {
+                                onMarkEpisodeWatched?.call(selectedSeasonNumber, ep.episodeNumber);
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.timer_outlined, size: 20, color: AppTheme.textMuted(context)),
+                              tooltip: 'Log exact minutes',
+                              onPressed: () {
+                                ProgressModalSheet.show(
+                                  context,
+                                  mediaId: mediaId,
+                                  title: '${ep.episodeNumber}. ${ep.title}',
+                                  totalDurationSeconds: runtimeSeconds,
+                                  initialProgressSeconds: isCurrent ? currentProgressSeconds : (isWatched ? runtimeSeconds : 0),
+                                  seasonNumber: selectedSeasonNumber,
+                                  episodeNumber: ep.episodeNumber,
+                                  isMovie: false,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

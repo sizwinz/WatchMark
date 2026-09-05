@@ -60,6 +60,14 @@ class LibraryDao extends DatabaseAccessor<AppDatabase> with _$LibraryDaoMixin {
     return query.getSingleOrNull();
   }
 
+  Stream<LibraryEntry?> watchLibraryEntryByMediaId(String mediaId, {bool includeDeleted = false}) {
+    final query = select(libraryEntries)..where((tbl) => tbl.mediaId.equals(mediaId));
+    if (!includeDeleted) {
+      query.where((tbl) => tbl.deletedAt.isNull());
+    }
+    return query.watchSingleOrNull();
+  }
+
   Future<int> upsertLibraryEntry(LibraryEntriesCompanion entry) {
     return into(libraryEntries).insertOnConflictUpdate(entry);
   }

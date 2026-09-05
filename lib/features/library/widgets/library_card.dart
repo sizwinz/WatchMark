@@ -79,8 +79,14 @@ class LibraryCard extends ConsumerWidget {
     final year = item.media.releaseDate != null ? item.media.releaseDate!.year.toString() : '';
     final statusColor = _getStatusColor(item.entry.status);
 
-    final totalSeconds = (item.media.runtimeMinutes ?? 120) * 60;
-    final hasProgress = item.entry.progressSeconds > 0 && item.entry.status != 'completed';
+    final totalSeconds = (item.media.runtimeMinutes ?? (isMovie ? 120 : 45)) * 60;
+    final isSeries = !isMovie;
+    final hasSeriesPosition = isSeries &&
+        item.entry.status != 'completed' &&
+        item.entry.status != 'watchlist' &&
+        (item.entry.currentSeason != null || item.entry.currentEpisode != null);
+
+    final hasProgress = (item.entry.progressSeconds > 0 && item.entry.status != 'completed') || hasSeriesPosition;
     final progressPct = totalSeconds > 0
         ? ((item.entry.progressSeconds / totalSeconds) * 100).clamp(0, 100).toInt()
         : 0;
@@ -191,7 +197,7 @@ class LibraryCard extends ConsumerWidget {
                     ),
                   ),
                   // Progress Bar overlay on bottom edge of poster
-                  if (hasProgress)
+                  if (item.entry.progressSeconds > 0 && item.entry.status != 'completed')
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -221,11 +227,22 @@ class LibraryCard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  if (hasProgress)
+                  if (isMovie && item.entry.progressSeconds > 0 && item.entry.status != 'completed')
                     Text(
-                      isMovie
-                          ? '${_formatDuration(item.entry.progressSeconds)} / ${_formatDuration(totalSeconds)} ($progressPct%)'
-                          : 'S${item.entry.currentSeason ?? 1}:E${item.entry.currentEpisode ?? 1} • ${_formatDuration(item.entry.progressSeconds)}',
+                      '${_formatDuration(item.entry.progressSeconds)} / ${_formatDuration(totalSeconds)} ($progressPct%)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primary,
+                      ),
+                    )
+                  else if (hasSeriesPosition)
+                    Text(
+                      item.entry.progressSeconds > 0
+                          ? 'S${item.entry.currentSeason ?? 1}:E${item.entry.currentEpisode ?? 1} • ${_formatDuration(item.entry.progressSeconds)}'
+                          : 'S${item.entry.currentSeason ?? 1}:E${item.entry.currentEpisode ?? 1} • Next Up',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

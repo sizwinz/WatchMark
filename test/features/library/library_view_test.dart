@@ -100,6 +100,53 @@ void main() {
       expect(find.text('1h / 2h (50%)'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
+
+    testWidgets('LibraryCard renders season and episode position for TV series in watching state even with 0 progress', (tester) async {
+      final item = LibraryItemWithMedia(
+        entry: LibraryEntry(
+          id: 'e2',
+          mediaId: 'm2',
+          status: 'watching',
+          progressSeconds: 0,
+          currentSeason: 2,
+          currentEpisode: 4,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        media: MediaTitle(
+          id: 'm2',
+          tmdbId: '600',
+          mediaType: 'tv',
+          title: 'Severance',
+          runtimeMinutes: 50,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 180,
+                height: 280,
+                child: LibraryCard(
+                  item: item,
+                  onTap: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('Severance'), findsOneWidget);
+      expect(find.text('WATCHING'), findsOneWidget);
+      expect(find.text('S2:E4 • Next Up'), findsOneWidget);
+    });
   });
 
   group('LibraryFilterNotifier Unit Tests', () {

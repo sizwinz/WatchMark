@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:watchmark/core/database/app_database.dart';
 import 'package:watchmark/core/database/daos/library_dao.dart';
 import 'package:watchmark/core/network/tmdb_api_service.dart';
 import 'package:watchmark/core/repositories/media_repository.dart';
+import 'package:watchmark/core/services/progress_service.dart';
 import 'package:watchmark/core/utilities/uuid_helper.dart';
 import 'package:watchmark/shared/providers/database_provider.dart';
 
@@ -16,6 +18,9 @@ class TitleDetailsState {
   final List<Episode> seasonEpisodes;
   final bool isLoadingSeason;
   final String? errorMessage;
+  final Episode? activeEpisode;
+  final int totalEpisodesCount;
+  final int watchedEpisodesCount;
 
   const TitleDetailsState({
     this.isLoading = true,
@@ -26,6 +31,9 @@ class TitleDetailsState {
     this.seasonEpisodes = const [],
     this.isLoadingSeason = false,
     this.errorMessage,
+    this.activeEpisode,
+    this.totalEpisodesCount = 0,
+    this.watchedEpisodesCount = 0,
   });
 
   TitleDetailsState copyWith({
@@ -37,6 +45,9 @@ class TitleDetailsState {
     List<Episode>? seasonEpisodes,
     bool? isLoadingSeason,
     String? errorMessage,
+    Episode? activeEpisode,
+    int? totalEpisodesCount,
+    int? watchedEpisodesCount,
   }) {
     return TitleDetailsState(
       isLoading: isLoading ?? this.isLoading,
@@ -47,6 +58,9 @@ class TitleDetailsState {
       seasonEpisodes: seasonEpisodes ?? this.seasonEpisodes,
       isLoadingSeason: isLoadingSeason ?? this.isLoadingSeason,
       errorMessage: errorMessage ?? this.errorMessage,
+      activeEpisode: activeEpisode ?? this.activeEpisode,
+      totalEpisodesCount: totalEpisodesCount ?? this.totalEpisodesCount,
+      watchedEpisodesCount: watchedEpisodesCount ?? this.watchedEpisodesCount,
     );
   }
 }
@@ -55,13 +69,17 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
   final TmdbApiService tmdbService;
   final MediaRepository mediaRepository;
   final LibraryDao libraryDao;
+  final ProgressService progressService;
   final int tmdbId;
   final String mediaType;
+
+  StreamSubscription<LibraryEntry?>? _entrySubscription;
 
   TitleDetailsController({
     required this.tmdbService,
     required this.mediaRepository,
     required this.libraryDao,
+    required this.progressService,
     required this.tmdbId,
     required this.mediaType,
   }) : super(const TitleDetailsState()) {
@@ -93,11 +111,18 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
       }
 
       int initialSeason = 1;
+      int totalEps = 0;
       if (detail != null && detail.seasons.isNotEmpty) {
         final seasons = detail.seasons;
         initialSeason = seasons
             .firstWhere((s) => s.seasonNumber > 0, orElse: () => seasons.first)
             .seasonNumber;
+
+        for (final s in seasons) {
+          if (s.seasonNumber > 0) {
+            totalEps += s.episodeCount;
+          }
+        }
       }
 
       state = state.copyWith(
@@ -106,7 +131,18 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
         localTitle: cachedTitle,
         libraryEntry: entry,
         selectedSeasonNumber: initialSeason,
+        totalEpisodesCount: totalEps,
       );
+
+      _calculateWatchedCountAndActiveEp(entry);
+
+      if (cachedTitle != null) {
+        _entrySubscription?.cancel();
+        _entrySubscription = libraryDao.watchLibraryEntryByMediaId(cachedTitle.id).listen((updatedEntry) {
+          state = state.copyWith(libraryEntry: updatedEntry);
+          _calculateWatchedCountAndActiveEp(updatedEntry);
+        });
+      }
 
       if (mediaType == 'tv' && cachedTitle != null) {
         await selectSeason(initialSeason);
@@ -117,6 +153,60 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
         errorMessage: 'Failed to load details: $e',
       );
     }
+  }
+
+  void _calculateWatchedCountAndActiveEp(LibraryEntry? entry) {
+    if (mediaType != 'tv' || state.detail == null) return;
+
+    final detail = state.detail!;
+    final totalEps = state.totalEpisodesCount > 0
+        ? state.totalEpisodesCount
+        : detail.seasons.where((s) => s.seasonNumber > 0).fold<int>(0, (sum, s) => sum + s.episodeCount);
+
+    if (entry == null) {
+      state = state.copyWith(
+        totalEpisodesCount: totalEps,
+        watchedEpisodesCount: 0,
+        activeEpisode: null,
+      );
+      return;
+    }
+
+    if (entry.status == 'completed') {
+      state = state.copyWith(
+        totalEpisodesCount: totalEps,
+        watchedEpisodesCount: totalEps,
+      );
+      return;
+    }
+
+    final curSeason = entry.currentSeason ?? 1;
+    final curEpisode = entry.currentEpisode ?? 1;
+
+    int watched = 0;
+    for (final s in detail.seasons) {
+      if (s.seasonNumber > 0) {
+        if (s.seasonNumber < curSeason) {
+          watched += s.episodeCount;
+        } else if (s.seasonNumber == curSeason) {
+          watched += (curEpisode - 1).clamp(0, s.episodeCount);
+        }
+      }
+    }
+
+    Episode? active;
+    for (final ep in state.seasonEpisodes) {
+      if (state.selectedSeasonNumber == curSeason && ep.episodeNumber == curEpisode) {
+        active = ep;
+        break;
+      }
+    }
+
+    state = state.copyWith(
+      totalEpisodesCount: totalEps,
+      watchedEpisodesCount: watched.clamp(0, totalEps),
+      activeEpisode: active ?? state.activeEpisode,
+    );
   }
 
   Future<void> selectSeason(int seasonNumber) async {
@@ -139,9 +229,21 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
           tvTmdbId: tmdbId,
           seasonNumber: seasonNumber,
         );
+
+        Episode? active;
+        final curSeason = state.libraryEntry?.currentSeason ?? 1;
+        final curEpisode = state.libraryEntry?.currentEpisode ?? 1;
+        for (final ep in episodes) {
+          if (seasonNumber == curSeason && ep.episodeNumber == curEpisode) {
+            active = ep;
+            break;
+          }
+        }
+
         state = state.copyWith(
           seasonEpisodes: episodes,
           isLoadingSeason: false,
+          activeEpisode: active ?? state.activeEpisode,
         );
       } else {
         state = state.copyWith(
@@ -172,14 +274,13 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
           mediaId: localTitle.id,
           status: status,
           progressSeconds: const drift.Value(0),
+          currentSeason: mediaType == 'tv' ? const drift.Value(1) : const drift.Value(null),
+          currentEpisode: mediaType == 'tv' ? const drift.Value(1) : const drift.Value(null),
           updatedAt: drift.Value(DateTime.now()),
           deletedAt: const drift.Value(null),
         ),
       );
     }
-
-    final updated = await libraryDao.getLibraryEntryByMediaId(localTitle.id);
-    state = state.copyWith(libraryEntry: updated);
   }
 
   Future<void> removeFromLibrary() async {
@@ -189,6 +290,59 @@ class TitleDetailsController extends StateNotifier<TitleDetailsState> {
       state = state.copyWith(libraryEntry: null);
     }
   }
+
+  Future<void> markEpisodeWatched(int seasonNumber, int episodeNumber, {String? platform}) async {
+    final localTitle = state.localTitle;
+    if (localTitle == null) return;
+
+    await progressService.markEpisodeWatched(
+      mediaId: localTitle.id,
+      seasonNumber: seasonNumber,
+      episodeNumber: episodeNumber,
+      platform: platform,
+    );
+  }
+
+  Future<void> markMovieWatched({String? platform}) async {
+    final localTitle = state.localTitle;
+    if (localTitle == null) return;
+
+    await progressService.markMovieWatched(
+      mediaId: localTitle.id,
+      platform: platform,
+    );
+  }
+
+  Future<void> startWatchingFirstEpisode({String? platform}) async {
+    final localTitle = state.localTitle;
+    if (localTitle == null) return;
+
+    await progressService.updateProgress(
+      mediaId: localTitle.id,
+      newProgressSeconds: 0,
+      seasonNumber: 1,
+      episodeNumber: 1,
+      platform: platform,
+    );
+  }
+
+  Future<void> incrementActiveProgress(int deltaSeconds) async {
+    final localTitle = state.localTitle;
+    if (localTitle == null) return;
+
+    await progressService.incrementProgress(
+      mediaId: localTitle.id,
+      deltaSeconds: deltaSeconds,
+      seasonNumber: state.libraryEntry?.currentSeason,
+      episodeNumber: state.libraryEntry?.currentEpisode,
+    );
+  }
+
+  @override
+  void dispose() {
+    _entrySubscription?.cancel();
+    super.dispose();
+  }
 }
 
 final titleDetailsControllerProvider = StateNotifierProvider.autoDispose
@@ -196,11 +350,13 @@ final titleDetailsControllerProvider = StateNotifierProvider.autoDispose
   final tmdbService = ref.watch(tmdbApiServiceProvider);
   final mediaRepository = ref.watch(mediaRepositoryProvider);
   final libraryDao = ref.watch(libraryDaoProvider);
+  final progressService = ref.watch(progressServiceProvider);
 
   return TitleDetailsController(
     tmdbService: tmdbService,
     mediaRepository: mediaRepository,
     libraryDao: libraryDao,
+    progressService: progressService,
     tmdbId: arg.tmdbId,
     mediaType: arg.mediaType,
   );
