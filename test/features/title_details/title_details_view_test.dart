@@ -186,7 +186,7 @@ void main() {
       // Episode 2 should be active with WATCHING badge
       expect(find.text('2. The Kingsroad'), findsOneWidget);
       expect(find.text('WATCHING'), findsOneWidget);
-      expect(find.text('• 20m watched (36%)'), findsOneWidget);
+      expect(find.text('• 20m (36%)'), findsOneWidget);
       // Episode 3 should be unwatched
       expect(find.text('3. Lord Snow'), findsOneWidget);
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:watchmark/app/theme.dart';
 import 'package:watchmark/core/network/tmdb_api_service.dart';
-import 'package:watchmark/core/services/progress_service.dart';
 import 'package:watchmark/features/custom_lists/widgets/add_to_list_bottom_sheet.dart';
 import 'package:watchmark/features/progress/widgets/progress_modal_sheet.dart';
 import 'package:watchmark/features/title_details/controllers/title_details_controller.dart';
@@ -65,9 +64,6 @@ class TitleDetailsView extends ConsumerWidget {
     final hasProgress = state.libraryEntry != null &&
         state.libraryEntry!.progressSeconds > 0 &&
         state.libraryEntry!.status != 'completed';
-    final progressPct = totalSeconds > 0 && state.libraryEntry != null
-        ? ((state.libraryEntry!.progressSeconds / totalSeconds) * 100).clamp(0, 100).toInt()
-        : 0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,

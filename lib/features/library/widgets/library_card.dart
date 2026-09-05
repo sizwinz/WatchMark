@@ -86,7 +86,6 @@ class LibraryCard extends ConsumerWidget {
         item.entry.status != 'watchlist' &&
         (item.entry.currentSeason != null || item.entry.currentEpisode != null);
 
-    final hasProgress = (item.entry.progressSeconds > 0 && item.entry.status != 'completed') || hasSeriesPosition;
     final progressPct = totalSeconds > 0
         ? ((item.entry.progressSeconds / totalSeconds) * 100).clamp(0, 100).toInt()
         : 0;

@@ -150,8 +150,8 @@ class SeasonTabView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 120,
-                        height: 86,
+                        width: 112,
+                        height: 78,
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
@@ -180,13 +180,10 @@ class SeasonTabView extends StatelessWidget {
                                 child: const Icon(Icons.tv, color: Colors.grey),
                               ),
 
-                            // Watched overlay
+                            // Watched subtle shade (no duplicate icon)
                             if (isWatched)
                               Container(
-                                color: Colors.black.withValues(alpha: 0.4),
-                                child: const Center(
-                                  child: Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 28),
-                                ),
+                                color: Colors.black.withValues(alpha: 0.18),
                               ),
 
                             // Active episode badge
@@ -230,7 +227,7 @@ class SeasonTabView extends StatelessWidget {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -257,20 +254,24 @@ class SeasonTabView extends StatelessWidget {
                                       ),
                                     ),
                                   if (isCurrent && currentProgressSeconds > 0) ...[
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      '• ${currentProgressSeconds ~/ 60}m watched ($currentEpProgressPct%)',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.primary,
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        '• ${currentProgressSeconds ~/ 60}m ($currentEpProgressPct%)',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.primary,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ],
                               ),
                               if (ep.overview != null && ep.overview!.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 3),
                                 Text(
                                   ep.overview!,
                                   maxLines: 2,
@@ -287,16 +288,19 @@ class SeasonTabView extends StatelessWidget {
                       ),
                       // Action buttons
                       Padding(
-                        padding: const EdgeInsets.only(top: 8, right: 4),
+                        padding: const EdgeInsets.only(top: 4, right: 4),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                              padding: const EdgeInsets.all(4),
+                              visualDensity: VisualDensity.compact,
                               icon: Icon(
                                 isWatched
                                     ? Icons.check_circle_rounded
                                     : (isCurrent ? Icons.play_circle_fill_rounded : Icons.check_circle_outline_rounded),
-                                size: 22,
+                                size: 21,
                                 color: isWatched
                                     ? AppTheme.success
                                     : (isCurrent ? AppTheme.primary : AppTheme.textMuted(context)),
@@ -309,7 +313,10 @@ class SeasonTabView extends StatelessWidget {
                               },
                             ),
                             IconButton(
-                              icon: Icon(Icons.timer_outlined, size: 20, color: AppTheme.textMuted(context)),
+                              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                              padding: const EdgeInsets.all(4),
+                              visualDensity: VisualDensity.compact,
+                              icon: Icon(Icons.timer_outlined, size: 19, color: AppTheme.textMuted(context)),
                               tooltip: 'Log exact minutes',
                               onPressed: () {
                                 ProgressModalSheet.show(
