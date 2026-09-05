@@ -25,5 +25,33 @@ void main() {
       expect(AppTheme.buttonRadius, 8.0);
       expect(AppTheme.inputRadius, 8.0);
     });
+
+    test('Light theme configures dark status bar icons for high contrast', () {
+      final lightTheme = AppTheme.lightTheme;
+      final overlay = lightTheme.appBarTheme.systemOverlayStyle;
+      expect(overlay, isNotNull);
+      expect(overlay!.statusBarIconBrightness, Brightness.dark);
+      expect(overlay.statusBarBrightness, Brightness.light);
+      expect(overlay.statusBarColor, Colors.transparent);
+      expect(overlay.systemNavigationBarColor, AppTheme.lightBackground);
+      expect(overlay.systemNavigationBarIconBrightness, Brightness.dark);
+
+      expect(AppTheme.lightOverlayStyle.statusBarIconBrightness, Brightness.dark);
+      expect(AppTheme.lightOverlayStyle.statusBarBrightness, Brightness.light);
+    });
+
+    test('Dark theme configures light status bar icons for high contrast', () {
+      final darkTheme = AppTheme.darkTheme;
+      final overlay = darkTheme.appBarTheme.systemOverlayStyle;
+      expect(overlay, isNotNull);
+      expect(overlay!.statusBarIconBrightness, Brightness.light);
+      expect(overlay.statusBarBrightness, Brightness.dark);
+      expect(overlay.statusBarColor, Colors.transparent);
+      expect(overlay.systemNavigationBarColor, AppTheme.darkBackground);
+      expect(overlay.systemNavigationBarIconBrightness, Brightness.light);
+
+      expect(AppTheme.darkOverlayStyle.statusBarIconBrightness, Brightness.light);
+      expect(AppTheme.darkOverlayStyle.statusBarBrightness, Brightness.dark);
+    });
   });
 }

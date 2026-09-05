@@ -68,6 +68,7 @@ class TitleDetailsView extends ConsumerWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        systemOverlayStyle: AppTheme.darkOverlayStyle,
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Padding(

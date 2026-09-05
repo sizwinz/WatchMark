@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:watchmark/app/router.dart';
 import 'package:watchmark/app/theme.dart';
@@ -21,6 +22,12 @@ class WatchMarkApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppTheme.systemOverlayStyle(context),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

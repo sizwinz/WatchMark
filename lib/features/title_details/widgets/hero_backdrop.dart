@@ -35,7 +35,7 @@ class HeroBackdrop extends StatelessWidget {
     return Stack(
       children: [
         // Backdrop Image with Gradient
-        if (backdropUrl != null)
+        if (backdropUrl != null) ...[
           SizedBox(
             height: 280,
             width: double.infinity,
@@ -58,8 +58,26 @@ class HeroBackdrop extends StatelessWidget {
                 errorWidget: (context, url, error) => Container(color: AppTheme.surface(context)),
               ),
             ),
-          )
-        else
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 80,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.5),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ] else
           Container(
             height: 180,
             color: AppTheme.surface(context),
